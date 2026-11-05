@@ -1,0 +1,13 @@
+{
+  "background_color": "#ffffff",
+  "description": "meditapp",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "meditapp",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "meditapp",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "id": "020812"
+}
