@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>静心禅坐 | 禅意冥想与打卡记录</title>
+    
+    <!-- PWA & Mobile Web Meta -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0A0F0D">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        zen: {
+                            bg: '#0A0F0D',       // 极暗深墨绿底色
+                            card: '#131A17',     // 墨石绿卡片色
+                            cardBorder: '#1F2924',
+                            accent: '#7AA385',   // 竹青绿
+                            accentHover: '#94BA9E',
+                            gold: '#D4AF37',     // 沉稳磬金
+                            text: '#E5EBE7',     // 柔和白
+                            muted: '#6B7C72'     // 苔藓灰
+                        }
+                    },
+                    animation: {
+                        'breath-ring': 'breath 8s ease-in-out infinite',
+                        'subtle-pulse': 'pulse 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        breath: {
+                            '0%, 100%': { transform: 'scale(0.98)', opacity: '0.25' },
+                            '50%': { transform: 'scale(1.18)', opacity: '0.65' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Inter:wght@300;400;500&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0A0F0D;
+            color: #E5EBE7;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .font-serif-zen {
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen bg-zen-bg text-zen-text flex flex-col justify-between selection:bg-zen-accent selection:text-zen-bg">
+
+    <!-- 顶部导航 bar -->
+    <header class="w-full max-w-4xl mx-auto px-6 py-5 flex justify-between items-center border-b border-zen-cardBorder/40">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-zen-accent/15 border border-zen-accent/30 flex items-center justify-center text-zen-accent shadow-inner">
+                <i data-lucide="flower-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <h1 class="font-serif-zen text-lg font-semibold tracking-wider text-zen-text leading-tight">静心禅坐</h1>
+                <p class="text-[10px] text-zen-muted tracking-widest uppercase">Zen Meditation</p>
+            </div>
+        </div>
+        
+        <nav class="flex bg-zen-card p-1 rounded-xl border border-zen-cardBorder">
+            <button id="tab-timer-btn" onclick="switchTab('timer')" class="px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 bg-zen-accent/20 text-zen-accent shadow-sm flex items-center space-x-1.5">
+                <i data-lucide="timer" class="w-4 h-4"></i>
+                <span>打坐</span>
+            </button>
+            <button id="tab-stats-btn" onclick="switchTab('stats')" class="px-4 py-1.5 rounded-lg text-xs font-medium text-zen-muted hover:text-zen-text transition-all duration-200 flex items-center space-x-1.5">
+                <i data-lucide="bar-chart-2" class="w-4 h-4"></i>
+                <span>统计日志</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- 主体区域 -->
+    <main class="w-full max-w-4xl mx-auto px-4 py-6 flex-1 flex flex-col justify-center items-center">
+
+        <!-- ================= 视图 1：计时器页面 ================= -->
+        <section id="view-timer" class="w-full max-w-md mx-auto flex flex-col items-center justify-center space-y-6">
+            
+            <!-- 时长预设按纽群 -->
+            <div id="preset-container" class="flex flex-wrap justify-center gap-2 max-w-sm transition-opacity duration-300">
+                <button onclick="setTimerPreset(5)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">5分</button>
+                <button onclick="setTimerPreset(10)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">10分</button>
+                <button onclick="setTimerPreset(15)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">15分</button>
+                <button onclick="setTimerPreset(20)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">20分</button>
+                <button onclick="setTimerPreset(30)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">30分</button>
+                <button onclick="setTimerPreset(45)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">45分</button>
+                <button onclick="setTimerPreset(60)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">60分</button>
+                <button onclick="setTimerPreset(0)" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">正计时</button>
+                <button onclick="showCustomTimeDialog()" class="preset-btn px-3 py-1.5 rounded-full border border-zen-cardBorder bg-zen-card text-xs font-medium text-zen-muted hover:border-zen-accent hover:text-zen-text transition-all duration-200">自定义</button>
+            </div>
+
+            <!-- 主计时呼吸光晕与圆环 -->
+            <div class="relative w-72 h-72 sm:w-80 sm:h-80 flex items-center justify-center my-2">
+                <!-- 呼吸光芒底影 -->
+                <div id="breath-ring" class="absolute inset-0 rounded-full bg-zen-accent/15 blur-2xl scale-95 transition-all duration-1000 opacity-0 pointer-events-none"></div>
+                
+                <!-- SVG 圆形进度条 -->
+                <svg class="w-full h-full transform -rotate-90 stroke-current" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="44" class="text-zen-cardBorder/40" stroke-width="2" fill="transparent" />
+                    <circle id="timer-progress" cx="50" cy="50" r="44" class="text-zen-accent transition-all duration-300 ease-linear" stroke-width="2" stroke-dasharray="276.46" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" />
+                </svg>
+
+                <!-- 内部数字与状态提示 -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                    <span id="mode-label" class="text-[11px] tracking-widest text-zen-muted font-light mb-1">准备就绪</span>
+                    <h2 id="timer-display" class="text-5xl sm:text-6xl font-extralight tracking-tight font-mono text-zen-text">15:00</h2>
+                    <span id="ambient-tip" class="text-xs text-zen-muted/80 mt-3 font-serif-zen tracking-wider">息念观心 · 万缘放下</span>
+                </div>
+            </div>
+
+            <!-- 控制按钮 -->
+            <div class="flex items-center space-x-6 pt-2">
+                <!-- 重置按钮 -->
+                <button id="btn-reset" onclick="resetTimer()" class="w-12 h-12 rounded-full border border-zen-cardBorder bg-zen-card flex items-center justify-center text-zen-muted hover:text-zen-text hover:border-zen-muted transition-all duration-200 opacity-40 cursor-not-allowed" disabled title="重置">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+                </button>
+
+                <!-- 开始/暂停 核心主按纽 -->
+                <button id="btn-toggle" onclick="toggleTimer()" class="w-16 h-16 rounded-full bg-zen-accent text-zen-bg flex items-center justify-center hover:bg-zen-accentHover transition-all duration-300 shadow-lg shadow-zen-accent/15 hover:scale-105 active:scale-95">
+                    <i id="toggle-icon" data-lucide="play" class="w-7 h-7 fill-current ml-0.5"></i>
+                </button>
+
+                <!-- 完成打卡按纽 -->
+                <button id="btn-finish" onclick="completeSession(true)" class="w-12 h-12 rounded-full border border-zen-cardBorder bg-zen-card flex items-center justify-center text-zen-muted hover:text-zen-gold hover:border-zen-gold transition-all duration-200 opacity-40 cursor-not-allowed" disabled title="提前结座">
+                    <i data-lucide="check" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- 试音按纽 -->
+            <div class="flex items-center space-x-4 pt-4">
+                <button onclick="playGongSound()" class="text-xs text-zen-muted hover:text-zen-accent flex items-center space-x-1.5 transition-colors">
+                    <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                    <span>试听磬音</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- ================= 视图 2：统计与历史页面 ================= -->
+        <section id="view-stats" class="w-full hidden space-y-6">
+            
+            <!-- 核心数据看板 -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-zen-card border border-zen-cardBorder rounded-2xl p-4 flex items-center space-x-4">
+                    <div class="w-11 h-11 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
+                        <i data-lucide="flame" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-zen-muted font-medium">连续打卡</div>
+                        <div class="text-2xl font-semibold mt-0.5 font-serif-zen"><span id="stat-streak">0</span> <span class="text-xs font-normal text-zen-muted">天</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-zen-card border border-zen-cardBorder rounded-2xl p-4 flex items-center space-x-4">
+                    <div class="w-11 h-11 rounded-xl bg-zen-accent/10 text-zen-accent flex items-center justify-center border border-zen-accent/20">
+                        <i data-lucide="clock" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-zen-muted font-medium">累计静坐</div>
+                        <div class="text-2xl font-semibold mt-0.5 font-serif-zen" id="stat-total-time">0 <span class="text-xs font-normal text-zen-muted">分钟</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-zen-card border border-zen-cardBorder rounded-2xl p-4 flex items-center space-x-4">
+                    <div class="w-11 h-11 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20">
+                        <i data-lucide="award" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs text-zen-muted font-medium">累计次数</div>
+                        <div class="text-2xl font-semibold mt-0.5 font-serif-zen"><span id="stat-count">0</span> <span class="text-xs font-normal text-zen-muted">次</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 近7日趋势图 -->
+            <div class="bg-zen-card border border-zen-cardBorder rounded-2xl p-5">
+                <h3 class="text-xs font-semibold text-zen-text flex items-center space-x-2 mb-4">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-zen-accent"></i>
+                    <span>近 7 日静坐时长趋势 (分钟)</span>
+                </h3>
+                <div id="chart-bars" class="h-36 flex items-end justify-between gap-2 pt-4 border-b border-zen-cardBorder/60 px-1">
+                    <!-- JS 渲染图表 -->
+                </div>
+            </div>
+
+            <!-- 历史日志与管理控制栏 -->
+            <div class="bg-zen-card border border-zen-cardBorder rounded-2xl p-5 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xs font-semibold text-zen-text flex items-center space-x-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-zen-accent"></i>
+                        <span>打坐心得日志</span>
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="exportData()" class="text-[11px] text-zen-muted hover:text-zen-accent flex items-center space-x-1 px-2 py-1 rounded bg-zen-bg/60 border border-zen-cardBorder">
+                            <i data-lucide="download" class="w-3 h-3"></i>
+                            <span>导出数据</span>
+                        </button>
+                        <button onclick="triggerImport()" class="text-[11px] text-zen-muted hover:text-zen-accent flex items-center space-x-1 px-2 py-1 rounded bg-zen-bg/60 border border-zen-cardBorder">
+                            <i data-lucide="upload" class="w-3 h-3"></i>
+                            <span>导入数据</span>
+                        </button>
+                        <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importData(event)">
+                    </div>
+                </div>
+
+                <!-- 历史记录展示 -->
+                <div id="history-list" class="space-y-3 max-h-80 overflow-y-auto no-scrollbar pt-1">
+                    <!-- JS 动态渲染 -->
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- 页脚禅意结语 -->
+    <footer class="w-full py-4 text-center text-xs text-zen-muted/50 border-t border-zen-cardBorder/20">
+        <p class="font-serif-zen">「 虚室生白，吉祥止止 」</p>
+    </footer>
+
+    <!-- ================= 完成结座 Modal ================= -->
+    <div id="modal-completion" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-zen-card border border-zen-cardBorder w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-95 transition-transform duration-300 space-y-5">
+            <div class="flex justify-between items-center border-b border-zen-cardBorder/60 pb-3">
+                <div class="flex items-center space-x-2 text-zen-gold">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    <h3 class="font-serif-zen font-semibold text-lg text-zen-text">静坐圆满</h3>
+                </div>
+                <button onclick="closeModal()" class="text-zen-muted hover:text-zen-text">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-zen-bg/60 p-4 rounded-xl border border-zen-cardBorder/40 flex justify-around text-center">
+                    <div>
+                        <div class="text-xs text-zen-muted">打坐时长</div>
+                        <div class="text-xl font-semibold text-zen-accent font-mono mt-1" id="modal-duration">15 分钟</div>
+                    </div>
+                    <div class="border-r border-zen-cardBorder/40"></div>
+                    <div>
+                        <div class="text-xs text-zen-muted">结座时间</div>
+                        <div class="text-sm font-medium text-zen-text mt-1.5" id="modal-time">14:30</div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-zen-muted mb-2 font-medium">随笔体悟 (可选)：</label>
+                    <textarea id="modal-note" rows="3" class="w-full bg-zen-bg border border-zen-cardBorder rounded-xl p-3 text-sm text-zen-text placeholder-zen-muted/40 focus:outline-none focus:border-zen-accent transition-colors resize-none" placeholder="写下此时的心境、呼吸状态或感悟..."></textarea>
+                </div>
+            </div>
+
+            <div class="flex space-x-3 pt-2">
+                <button onclick="closeModal()" class="flex-1 py-2.5 rounded-xl border border-zen-cardBorder text-xs text-zen-muted hover:text-zen-text transition-all font-medium">放弃记录</button>
+                <button onclick="saveSessionRecord()" class="flex-1 py-2.5 rounded-xl bg-zen-accent text-zen-bg text-xs font-semibold hover:bg-zen-accentHover transition-all shadow-md">存入日志</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS 核心逻辑 -->
+    <script>
+        // 全局计时状态
+        let timerState = {
+            presetMinutes: 15,    // 0 表示正计时
+            totalSeconds: 900,
+            remainingSeconds: 900,
+            elapsedSeconds: 0,
+            isRunning: false,
+            intervalId: null
+        };
+
+        let meditationLogs = [];
+        let wakeLock = null;
+
+        // 页面初始化
+        window.onload = function() {
+            lucide.createIcons();
+            loadLogsFromStorage();
+            updateStatsUI();
+            updatePresetButtonsUI();
+            updateTimerDisplay();
+        };
+
+        // Web Audio API 优雅多频合成磬音
+        function playGongSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                const baseFreq = 216.0; // A3 沉稳频段
+                const ratios = [1, 2.75, 5.40]; // 铜磬声学泛音比列
+                const gains = [0.7, 0.2, 0.08];
+
+                ratios.forEach((ratio, i) => {
+                    const osc = ctx.createOscillator();
+                    const gainNode = ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(baseFreq * ratio, ctx.currentTime);
+
+                    // 声音包络指数衰减
+                    gainNode.gain.setValueAtTime(gains[i], ctx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 6.0);
+
+                    osc.connect(gainNode);
+                    gainNode.connect(ctx.destination);
+
+                    osc.start();
+                    osc.stop(ctx.currentTime + 6.5);
+                });
+            } catch (e) {
+                console.log("Audio play blocked by browser interaction policy", e);
+            }
+        }
+
+        // 防止屏幕休眠 (Wake Lock API)
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                console.log('Wake Lock Error:', err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().then(() => { wakeLock = null; });
+            }
+        }
+
+        // 视图切换
+        function switchTab(tab) {
+            const timerView = document.getElementById('view-timer');
+            const statsView = document.getElementById('view-stats');
+            const timerBtn = document.getElementById('tab-timer-btn');
+            const statsBtn = document.getElementById('tab-stats-btn');
+
+            if (tab === 'timer') {
+                timerView.classList.remove('hidden');
+                statsView.classList.add('hidden');
+                timerBtn.className = "px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 bg-zen-accent/20 text-zen-accent shadow-sm flex items-center space-x-1.5";
+                statsBtn.className = "px-4 py-1.5 rounded-lg text-xs font-medium text-zen-muted hover:text-zen-text transition-all duration-200 flex items-center space-x-1.5";
+            } else {
+                timerView.classList.add('hidden');
+                statsView.classList.remove('hidden');
+                statsBtn.className = "px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 bg-zen-accent/20 text-zen-accent shadow-sm flex items-center space-x-1.5";
+                timerBtn.className = "px-4 py-1.5 rounded-lg text-xs font-medium text-zen-muted hover:text-zen-text transition-all duration-200 flex items-center space-x-1.5";
+                renderStatsAndChart();
+            }
+        }
+
+        // 预设时长选择
+        function setTimerPreset(mins) {
+            if (timerState.isRunning) return;
+            timerState.presetMinutes = mins;
+            timerState.totalSeconds = mins * 60;
+            timerState.remainingSeconds = mins * 60;
+            timerState.elapsedSeconds = 0;
+
+            updatePresetButtonsUI();
+            updateTimerDisplay();
+        }
+
+        function showCustomTimeDialog() {
+            if (timerState.isRunning) return;
+            const input = prompt("请输入自定义静坐分钟数 (1-180):", "25");
+            if (input) {
+                const val = parseInt(input.trim(), 10);
+                if (!isNaN(val) && val > 0 && val <= 180) {
+                    setTimerPreset(val);
+                }
+            }
+        }
+
+        function updatePresetButtonsUI() {
+            const btns = document.querySelectorAll('.preset-btn');
+            btns.forEach(btn => {
+                const text = btn.innerText;
+                const isMatch = (timerState.presetMinutes === 0 && text.includes('正计时')) ||
+                                (text.includes(`${timerState.presetMinutes}分`));
+
+                if (isMatch) {
+                    btn.classList.add('border-zen-accent', 'text-zen-text', 'bg-zen-accent/15');
+                    btn.classList.remove('border-zen-cardBorder', 'text-zen-muted', 'bg-zen-card');
+                } else {
+                    btn.classList.remove('border-zen-accent', 'text-zen-text', 'bg-zen-accent/15');
+                    btn.classList.add('border-zen-cardBorder', 'text-zen-muted', 'bg-zen-card');
+                }
+            });
+        }
+
+        function toggleTimer() {
+            if (timerState.isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (timerState.isRunning) return;
+
+            if (timerState.elapsedSeconds === 0) {
+                playGongSound();
+            }
+
+            timerState.isRunning = true;
+            requestWakeLock();
+            updateControlsUI();
+
+            document.getElementById('breath-ring').classList.remove('opacity-0');
+            document.getElementById('breath-ring').classList.add('animate-breath-ring');
+            document.getElementById('preset-container').classList.add('opacity-30', 'pointer-events-none');
+
+            timerState.intervalId = setInterval(() => {
+                if (timerState.presetMinutes === 0) {
+                    timerState.elapsedSeconds++;
+                } else {
+                    if (timerState.remainingSeconds > 0) {
+                        timerState.remainingSeconds--;
+                        timerState.elapsedSeconds++;
+                    } else {
+                        pauseTimer();
+                        playGongSound();
+                        completeSession(false);
+                        return;
+                    }
+                }
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            timerState.isRunning = false;
+            clearInterval(timerState.intervalId);
+            releaseWakeLock();
+            updateControlsUI();
+
+            document.getElementById('breath-ring').classList.add('opacity-0');
+            document.getElementById('breath-ring').classList.remove('animate-breath-ring');
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timerState.remainingSeconds = timerState.presetMinutes * 60;
+            timerState.elapsedSeconds = 0;
+            document.getElementById('preset-container').classList.remove('opacity-30', 'pointer-events-none');
+            updateControlsUI();
+            updateTimerDisplay();
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('timer-display');
+            const progress = document.getElementById('timer-progress');
+            const modeLabel = document.getElementById('mode-label');
+
+            let secToShow = timerState.presetMinutes === 0 ? timerState.elapsedSeconds : timerState.remainingSeconds;
+            const mins = Math.floor(secToShow / 60);
+            const secs = secToShow % 60;
+            display.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            const circumference = 276.46;
+            if (timerState.presetMinutes === 0) {
+                const cycleRatio = (timerState.elapsedSeconds % 60) / 60;
+                progress.style.strokeDashoffset = circumference * (1 - cycleRatio);
+                modeLabel.innerText = "自由打坐中";
+            } else {
+                const ratio = timerState.remainingSeconds / timerState.totalSeconds;
+                progress.style.strokeDashoffset = circumference * (1 - ratio);
+                modeLabel.innerText = timerState.isRunning ? "入定静坐中" : "准备就绪";
+            }
+        }
+
+        function updateControlsUI() {
+            const toggleIcon = document.getElementById('toggle-icon');
+            const btnReset = document.getElementById('btn-reset');
+            const btnFinish = document.getElementById('btn-finish');
+
+            toggleIcon.setAttribute('data-lucide', timerState.isRunning ? 'pause' : 'play');
+            lucide.createIcons();
+
+            if (timerState.elapsedSeconds > 0) {
+                btnReset.removeAttribute('disabled');
+                btnReset.classList.remove('opacity-40', 'cursor-not-allowed');
+                btnFinish.removeAttribute('disabled');
+                btnFinish.classList.remove('opacity-40', 'cursor-not-allowed');
+            } else {
+                btnReset.setAttribute('disabled', 'true');
+                btnReset.classList.add('opacity-40', 'cursor-not-allowed');
+                btnFinish.setAttribute('disabled', 'true');
+                btnFinish.classList.add('opacity-40', 'cursor-not-allowed');
+            }
+        }
+
+        // 打卡结座弹窗
+        let pendingDurationMins = 0;
+        function completeSession(isManual = false) {
+            pauseTimer();
+            const mins = Math.round(timerState.elapsedSeconds / 60);
+            if (mins < 1) {
+                resetTimer();
+                return;
+            }
+
+            pendingDurationMins = mins;
+            const now = new Date();
+            document.getElementById('modal-duration').innerText = `${pendingDurationMins} 分钟`;
+            document.getElementById('modal-time').innerText = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            document.getElementById('modal-note').value = '';
+
+            const modal = document.getElementById('modal-completion');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('div').classList.remove('scale-95');
+            modal.querySelector('div').classList.add('scale-100');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal-completion');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            resetTimer();
+        }
+
+        function saveSessionRecord() {
+            const noteText = document.getElementById('modal-note').value.trim();
+            const now = new Date();
+
+            const record = {
+                id: Date.now(),
+                timestamp: now.toISOString(),
+                dateStr: now.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }),
+                timeStr: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+                duration: pendingDurationMins,
+                note: noteText || '安享当下，万念归一。'
+            };
+
+            meditationLogs.unshift(record);
+            saveLogsToStorage();
+            closeModal();
+            updateStatsUI();
+        }
+
+        // 数据存储与导入导出
+        function saveLogsToStorage() {
+            localStorage.setItem('zen_meditation_logs', JSON.stringify(meditationLogs));
+        }
+
+        function loadLogsFromStorage() {
+            const stored = localStorage.getItem('zen_meditation_logs');
+            if (stored) {
+                try { meditationLogs = JSON.parse(stored); } catch(e) { meditationLogs = []; }
+            }
+        }
+
+        function deleteRecord(id) {
+            if (confirm("确定要删除这条打坐记录吗？")) {
+                meditationLogs = meditationLogs.filter(log => log.id !== id);
+                saveLogsToStorage();
+                renderStatsAndChart();
+            }
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(meditationLogs, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `静心禅坐记录_备份_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function triggerImport() {
+            document.getElementById('import-file-input').click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        meditationLogs = imported;
+                        saveLogsToStorage();
+                        renderStatsAndChart();
+                        alert("成功导入打坐记录数据！");
+                    }
+                } catch(err) {
+                    alert("导入文件格式无效！");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 统计图表渲染
+        function updateStatsUI() {
+            document.getElementById('stat-count').innerText = meditationLogs.length;
+            const totalMins = meditationLogs.reduce((sum, log) => sum + log.duration, 0);
+            document.getElementById('stat-total-time').innerHTML = `${totalMins} <span class="text-xs font-normal text-zen-muted">分钟</span>`;
+            document.getElementById('stat-streak').innerText = calculateStreak();
+        }
+
+        function calculateStreak() {
+            if (meditationLogs.length === 0) return 0;
+            const dates = [...new Set(meditationLogs.map(log => new Date(log.timestamp).toDateString()))];
+            let streak = 0;
+            let checkDate = new Date();
+
+            if (!dates.includes(checkDate.toDateString())) {
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+
+            while (dates.includes(checkDate.toDateString())) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            return streak;
+        }
+
+        function renderStatsAndChart() {
+            updateStatsUI();
+
+            const historyList = document.getElementById('history-list');
+            if (meditationLogs.length === 0) {
+                historyList.innerHTML = `
+                    <div class="text-center py-6 text-zen-muted/50 text-xs">
+                        <i data-lucide="inbox" class="w-7 h-7 mx-auto mb-1.5 opacity-40"></i>
+                        暂无记录，开启第一座吧
+                    </div>
+                `;
+            } else {
+                historyList.innerHTML = meditationLogs.map(log => `
+                    <div class="p-3 bg-zen-bg/40 border border-zen-cardBorder/40 rounded-xl flex items-start justify-between group hover:border-zen-accent/30 transition-all">
+                        <div class="space-y-1 pr-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-semibold text-zen-accent font-mono">${log.duration} 分钟</span>
+                                <span class="text-[10px] text-zen-muted">• ${log.dateStr} ${log.timeStr}</span>
+                            </div>
+                            <p class="text-xs text-zen-text/90 leading-relaxed font-serif-zen">${escapeHtml(log.note)}</p>
+                        </div>
+                        <button onclick="deleteRecord(${log.id})" class="text-zen-muted/30 hover:text-red-400 p-1 rounded transition-colors opacity-0 group-hover:opacity-100">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            render7DayChart();
+            lucide.createIcons();
+        }
+
+        function render7DayChart() {
+            const chartContainer = document.getElementById('chart-bars');
+            const days = [];
+            const dayLabels = ['日', '一', '二', '三', '四', '五', '六'];
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push({ dateStr: d.toDateString(), label: `周${dayLabels[d.getDay()]}`, duration: 0 });
+            }
+
+            meditationLogs.forEach(log => {
+                const logDateStr = new Date(log.timestamp).toDateString();
+                const dayObj = days.find(d => d.dateStr === logDateStr);
+                if (dayObj) dayObj.duration += log.duration;
+            });
+
+            const maxDuration = Math.max(...days.map(d => d.duration), 30);
+
+            chartContainer.innerHTML = days.map(d => {
+                const heightPercent = Math.min(Math.round((d.duration / maxDuration) * 100), 100);
+                const hasData = d.duration > 0;
+                
+                return `
+                    <div class="flex-1 flex flex-col items-center h-full justify-end group">
+                        <div class="text-[10px] font-mono text-zen-accent opacity-0 group-hover:opacity-100 transition-opacity mb-1 ${hasData ? '' : 'invisible'}">
+                            ${d.duration}m
+                        </div>
+                        <div class="w-full max-w-[24px] bg-zen-cardBorder/40 rounded-t-md h-full flex items-end overflow-hidden p-0.5">
+                            <div class="w-full rounded-t-sm transition-all duration-500 ${hasData ? 'bg-zen-accent group-hover:bg-zen-accentHover' : 'bg-transparent'}" style="height: ${heightPercent}%;"></div>
+                        </div>
+                        <span class="text-[10px] text-zen-muted mt-1.5 font-medium">${d.label}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
